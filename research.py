@@ -50,5 +50,3 @@ y_offset=int((bkgd_blur.shape[0]-img_resize.shape[0])/2)
 x_offset=int((bkgd_blur.shape[1]-img_resize.shape[1])/2)
 bkgd_blur[y_offset:y_offset+img_resize.shape[0], x_offset:x_offset+img_resize.shape[1]] = img_resize
 
-# Write file
-cv.imwrite(output_image_path,bkgd_blur)

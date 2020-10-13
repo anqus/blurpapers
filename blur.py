@@ -5,16 +5,13 @@ from screeninfo import get_monitors
 import ntpath
 import pathlib
 
-def blurpaper(x_dim, y_dim, input_image_path, blur_level, output_path):
+def blur_underlay(img, x_dim=0, y_dim=0, blur_level=70,):
 
-    image_name=ntpath.basename(input_image_path)
-    output_image_path = f'{output_path}blurpaper_{blur_level}_{image_name}'
-    path = pathlib.Path(output_image_path)
-    if path.exists() == True:
-        return
+    if x_dim==0:
+        x_dim = img.shape[1]
+    if y_dim==0:
+        y_dim = img.shape[0]
 
-    # Load image/ aspect ratio
-    img = cv.imread(input_image_path, 1)
     img_ratio = img.shape[1]/img.shape[0]
 
     # Calculate size of foreground image
@@ -45,22 +42,33 @@ def blurpaper(x_dim, y_dim, input_image_path, blur_level, output_path):
     x_offset=int((bkgd_blur.shape[1]-img_resize.shape[1])/2)
     bkgd_blur[y_offset:y_offset+img_resize.shape[0], x_offset:x_offset+img_resize.shape[1]] = img_resize
 
-    # Write file
-    cv.imwrite(output_image_path,bkgd_blur)
+    return bkgd_blur
 
-# User defined input variables
-monitor_num=0
-blur_level=70
-input_path='C:/Users/liv3r/OneDrive/Pictures/Favourites/Unedited/'
-filetype='.jpg'
-output_path='blurpapers/'
 
-# Fetch desktop resolution
-m = get_monitors()
-x_dim=m[monitor_num].width
-y_dim=m[monitor_num].height
+def wallpaper(input_path, output_path, monitor_num=0, filetype='.jpg'):
 
-for input_image_path in glob.iglob(f'{input_path}*{filetype}'):
-    blurpaper(x_dim, y_dim, input_image_path, blur_level, output_path)
+    # Fetch desktop resolution
+    m = get_monitors()
+    monitor_x_dim=m[monitor_num].width
+    monitor_y_dim=m[monitor_num].height
 
-print('Done!')
+    for input_image_path in glob.iglob(f'{input_path}*{filetype}'):
+
+        image_name=ntpath.basename(input_image_path)
+        output_image_path = f'{output_path}blurpaper_{image_name}'
+        path = pathlib.Path(output_image_path)
+        if path.exists() == True:
+            return
+
+        # Load image and transform
+        img = cv.imread(input_image_path, 1)
+        bkgd_blur = blur_underlay(img, x_dim=monitor_x_dim, y_dim=monitor_y_dim)
+
+        # Write file
+        print(output_image_path)
+        cv.imwrite(output_image_path,bkgd_blur)
+
+    print('Done!')
+
+
+wallpaper(input_path='C:/Users/Angus/Photos/Test/', output_path='C:/Users/Angus/Photos/Test/Blurpapers/',)
